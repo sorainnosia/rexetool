@@ -3,7 +3,7 @@ use std::io::Read;
 use std::ops::Index;
 mod between;
 
-fn library(buf: &Vec<u8>, start: String, end: String) -> bool {
+fn library(buf: &Vec<u8>, start: String, end: String) -> Vec<String> {
     let mut prog_names: Vec<String> = std::env::args().collect();
     prog_names.remove(0);
 
@@ -26,33 +26,48 @@ fn library(buf: &Vec<u8>, start: String, end: String) -> bool {
                 let mut x = between::index_of(&str, "\\".to_string(), 0, true);
                 let y = between::index_of(&str, "/".to_string(), 0, true);
                 if x != -1 && y != -1 && y < x { x = y; }
+                if x == -1 { x = y; }
 
                 if x > 0 {
                     let mut lib_name = between::substring(&str, x + 1, str.len() as i32 - x - 1);
                     let mut x2 = between::index_of(&lib_name, "\\".to_string(), 0, true);
                     let y2 = between::index_of(&lib_name, "/".to_string(), 0, true);
                     if x2 != -1 && y2 != -1 && y2 < x2 { x2 = y2; }
+                    if x2 == -1 { x2 = y2; }
 
                     if x2 != -1 {
                         lib_name = between::substring(&lib_name, 0, x2);
                         if result.contains(&lib_name) == false {
                             result.push(lib_name.to_string());
-                            println!("- {}", lib_name);
                         }
                     }
                 }
             }       
         }
     }
-    return false;
+
+    result.sort();
+    let mut result2 = vec![];
+    for r in result {
+        println!("- {}", r.to_string());
+        result2.push(r.to_string());
+    }
+    
+    return result2;
+}
+
+fn print_help() {
+    println!("{}", "rexetool 0.1.0");
+    println!("");
+    println!("{}", "USAGE");
+    println!("{}", " <Binary File path>               to check compiled rust binary and the crates it used");
 }
 
 fn main() {
     let mut  s: Vec<String> = std::env::args().collect();
 
     if s.len() <= 1 {
-        println!("{}", "USAGE");
-        println!("{}", " <Binary File path>               to check compiler of binary and the crates it used");
+        print_help();
         return;
     }
     
@@ -84,8 +99,8 @@ fn main() {
                         }
                     }
                     
-                    println!("Library used :");
-                    library(&buf, "crates.io-".to_string(), ".rs".to_string());
+                    println!("Crates used :");
+                    _ = library(&buf, "crates.io-".to_string(), ".rs".to_string());
                 },
                 Err(x) => {
                     println!("{}", x);
