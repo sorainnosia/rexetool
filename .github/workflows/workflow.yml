@@ -26,7 +26,7 @@ jobs:
           path: target/x86_64-unknown-linux-gnu/release/rexetool_linux_x64
           
       - name: Build x86
-        run: sudo apt-get install gcc-multilib libssl-dev && export OPENSSL_DIR=usr/local/ssl && rustup target install i686-unknown-linux-gnu && cargo clean && cargo build --release --target=i686-unknown-linux-gnu && strip target/i686-unknown-linux-gnu/release/rexetool && mv target/i686-unknown-linux-gnu/release/rexetool target/i686-unknown-linux-gnu/release/rexetool_linux_x86
+        run: cargo clean && cargo build --release --target=i686-unknown-linux-gnu && strip target/i686-unknown-linux-gnu/release/rexetool && mv target/i686-unknown-linux-gnu/release/rexetool target/i686-unknown-linux-gnu/release/rexetool_linux_x86
 
       - name: Upload linux-x86
         uses: actions/upload-artifact@v2
