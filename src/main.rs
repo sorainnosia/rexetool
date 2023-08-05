@@ -52,7 +52,7 @@ fn main() {
 
     if s.len() <= 1 {
         println!("{}", "USAGE");
-        println!("{}", " <Binary File path>               to check compiler of binary and the developer");
+        println!("{}", " <Binary File path>               to check compiler of binary and the crates it used");
         return;
     }
     
