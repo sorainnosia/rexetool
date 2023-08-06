@@ -11,4 +11,5 @@ USAGE
 ![image](https://github.com/sorainnosia/rexetool/assets/19261780/3f62b5a8-11e2-423c-be79-841b1ed67bd9)
 
 ## Go Binary
-![image](https://github.com/sorainnosia/rexetool/assets/19261780/79b93fe4-f058-47e6-aba1-53ce2a417c8f)
+![image](https://github.com/sorainnosia/rexetool/assets/19261780/c2a0bb50-69e4-422d-8593-944401b6ccba)
+
