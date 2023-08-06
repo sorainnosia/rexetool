@@ -28,13 +28,22 @@ fn crates_list(buf: &Vec<u8>, start: String, end: String) -> Vec<String> {
             if contain == false {
                 let mut x = bytesops::index_of(&str.as_bytes().to_vec(), &"\\".to_string().as_bytes().to_vec(), 0, true);
                 let y = bytesops::index_of(&str.as_bytes().to_vec(), &"/".to_string().as_bytes().to_vec(), 0, true);
-                if x != -1 && y != -1 && y < x { x = y; }
-                if x == -1 { x = y; }
+                if y != -1 && y < x { x = y; }
 
                 if x > 0 {
-                    let lib_name = bytesops::substring(&str, 0, x);
-                    if result.contains(&lib_name) == false {
-                        result.push(lib_name.to_string());
+                    let mut lib_name = bytesops::substring(&str, x + 1, str.len() as i32 - x - 1);
+
+                    let mut x2 = bytesops::index_of(&lib_name.as_bytes().to_vec(), &"\\".to_string().as_bytes().to_vec(), 0, true);
+                    let y2 = bytesops::index_of(&lib_name.as_bytes().to_vec(), &"/".to_string().as_bytes().to_vec(), 0, true);
+                    if y2 != -1 && y2 < x2 { x2 = y2; }
+
+                    if x2 > 0 {
+                        lib_name = bytesops::substring(&lib_name, 0, x2);
+
+                        lib_name = bytesops::trim(lib_name.to_string());
+                        if result.contains(&lib_name) == false {
+                            result.push(lib_name.to_string());
+                        }
                     }
                 }
             }       
