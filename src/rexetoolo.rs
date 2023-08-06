@@ -100,7 +100,7 @@ fn modules_list(buf: &Vec<u8>, start: String, end: String) -> Vec<String> {
 }
 
 fn print_help() {
-    println!("{}", "rexetool 0.1.0");
+    println!("{}", "rexetool 0.2.0");
     println!("");
     println!("{}", "USAGE");
     println!("{}", " <Binary File path>               to check compiled rust binary and the crates it used");
