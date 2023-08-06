@@ -112,7 +112,7 @@ fn print_help() {
     println!("{}", "rexetool 0.2.0");
     println!("");
     println!("{}", "USAGE");
-    println!("{}", " <Binary File path>               to check compiled rust binary and the crates it used");
+    println!("{}", " <Binary File path>               to check compiled Rust/Go binary and the crates it used");
     println!("");
 }
 
