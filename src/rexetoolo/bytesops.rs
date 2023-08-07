@@ -64,6 +64,71 @@ pub fn rtrim(str: String) -> String {
     return output;
 }
 
+pub fn lascii(str: String) -> String {
+    let obj = str.clone();
+    let mut gr = obj.chars();
+    
+    let count = (obj.chars().count()) as i32;
+    let mut i = 0;
+    let mut start = true;
+
+    let mut output = String::from("");
+    while i < count {
+        let cc = gr.next();
+        let mut c = '\0';
+        match cc {
+            Some(x) => c = x,
+            None => { break; }
+        }
+
+        if start && (c < ' ' || c > '~') {
+            i = i + 1;
+            continue;
+        } else {
+            output.push_str(c.to_string().as_str());
+            start = false;
+        }
+        i = i + 1;
+    }
+    return output;
+}
+
+pub fn rascii(str: String) -> String {
+    let obj = str.clone();
+    let mut gr = obj.chars().rev();
+    
+    let count = (obj.chars().count()) as i32;
+    let mut i = 0;
+    let mut start = true;
+
+    let mut output = String::from("");
+    while i < count {
+        let cc = gr.next();
+        let mut c = '\0';
+        match cc {
+            Some(x) => c = x,
+            None => { break; }
+        }
+
+        if start && (c < ' ' || c > '~') {
+            i = i + 1;
+            continue;
+        } else {
+            output.insert_str(0, c.to_string().as_str());
+            start = false;
+        }
+        i = i + 1;
+    }
+    return output;
+}
+
+pub fn ascii(str: String) -> String {
+    let mut result = str.to_string();
+    result = lascii(result);
+    result = rascii(result);
+    return result;
+
+}
 pub fn trim(str: String) -> String {
     let mut result = str.to_string();
     result = ltrim(result);
@@ -150,6 +215,32 @@ pub fn index_of(str: &Vec<u8>, sub: &Vec<u8>, start_index: i32, ignore_case: boo
     if cnt == sc as i32 {
         return i - cnt + start_index;
     }
+    return -1;
+}
+
+pub fn index_of_non_fn(str: &Vec<u8>, start_index: i32) -> i32 {
+    let stc = str.len();
+    if start_index + (1 as i32) > (stc as i32) { return -1; }
+
+    let mut i:i32 = 0;
+    let mut cnt:i32 = 0;
+
+    let mut cc:i32 = start_index;
+    
+    for c in str.iter() {
+        if cc > 0 {
+            cc -= 1;
+            continue;
+        }
+        
+        if (*c >= 32 && *c <= 126) {
+            i += 1;
+        } else {
+            i += 1;
+            return i - 1 + start_index;
+        }
+    }
+    
     return -1;
 }
 
