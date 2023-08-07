@@ -60,7 +60,7 @@ fn crates_list(buf: &Vec<u8>, start: String, end: String) -> Vec<String> {
     return result2;
 }
 
-fn modules_list(buf: &Vec<u8>, start: String, end: String) -> Vec<String> {
+fn modules_list(buf: &Vec<u8>, start: String, end: String, mode: i32) -> Vec<String> {
     let mut prog_names: Vec<String> = std::env::args().collect();
     prog_names.remove(0);
 
@@ -90,6 +90,15 @@ fn modules_list(buf: &Vec<u8>, start: String, end: String) -> Vec<String> {
             if x != -1 {
                 lib_name = bytesops::substring(&lib_name, 0, x);
             }
+            if mode == 2 {
+                let mut x = bytesops::index_of(&lib_name.as_bytes().to_vec(), &&"/".as_bytes().to_vec(), 0, false);
+                if x != -1 {
+                    x = bytesops::index_of(&lib_name.as_bytes().to_vec(), &&"/".as_bytes().to_vec(), x + 1, false);
+                    if x != -1 {
+                        lib_name = bytesops::substring(&lib_name, 0, x);
+                    }
+                }
+            }
             lib_name = bytesops::trim(lib_name.to_string());
 
             if result.contains(&lib_name) == false {
@@ -101,7 +110,6 @@ fn modules_list(buf: &Vec<u8>, start: String, end: String) -> Vec<String> {
     result.sort();
     let mut result2 = vec![];
     for r in result {
-        println!("- {}", r.to_string());
         result2.push(r.to_string());
     }
     
@@ -112,7 +120,7 @@ fn print_help() {
     println!("{}", "rexetool 0.2.0");
     println!("");
     println!("{}", "USAGE");
-    println!("{}", " <Binary File path>               to check compiled Rust/Go binary and the crates it used");
+    println!("{}", " <Binary File path>               to check compiled Rust/Go binary and the crates/modules it used");
     println!("");
 }
 
@@ -191,10 +199,16 @@ pub fn rexetool() {
                     } else if btype == BinaryType::NET {
                         println!("Program '{}' : NET binary", bytesops::get_filename(s[0].to_string()));
                     } else if btype == BinaryType::GO {
-                        println!("Program '{}' : GO binary", bytesops::get_filename(s[0].to_string()));
+                        println!("Program '{}' : Go binary", bytesops::get_filename(s[0].to_string()));
 
                         println!("Modules used :");
-                        _ = modules_list(&buf, "golang_org/x/".to_string(), ".".to_string());    
+                        let mut vec1 = modules_list(&buf, "golang_org/x/".to_string(), ".".to_string(), 1);
+                        let mut vec2 = modules_list(&buf, "github.com/".to_string(), ".".to_string(), 2);
+                        vec1.append(&mut vec2);
+                        
+                        for x in vec1 {
+                            println!("- {}", x);
+                        }
                     } else if btype == BinaryType::Unknown {
                         println!("Program '{}' : Unknown binary", bytesops::get_filename(s[0].to_string()));
                     }
