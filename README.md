@@ -4,7 +4,7 @@ A program to list crates used by rust compiled binary
 rexetool 0.1.0
 
 USAGE
- <Binary File path>               to check compiled Rust/Go binary and the crates it used
+ <Binary File path>               to check compiled Rust/Go binary and the crates/modules it used
 ```
 
 ## Rust Binary
