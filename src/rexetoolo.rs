@@ -28,19 +28,20 @@ fn crates_list(buf: &Vec<u8>, start: String, end: String) -> Vec<String> {
             if contain == false {
                 let mut x = bytesops::index_of(&str.as_bytes().to_vec(), &"\\".to_string().as_bytes().to_vec(), 0, true);
                 let y = bytesops::index_of(&str.as_bytes().to_vec(), &"/".to_string().as_bytes().to_vec(), 0, true);
-                if y != -1 && y < x { x = y; }
+                if y != -1 && (y < x || x == -1) { x = y; }
 
                 if x > 0 {
                     let mut lib_name = bytesops::substring(&str, x + 1, str.len() as i32 - x - 1);
 
                     let mut x2 = bytesops::index_of(&lib_name.as_bytes().to_vec(), &"\\".to_string().as_bytes().to_vec(), 0, true);
                     let y2 = bytesops::index_of(&lib_name.as_bytes().to_vec(), &"/".to_string().as_bytes().to_vec(), 0, true);
-                    if y2 != -1 && y2 < x2 { x2 = y2; }
+                    if y2 != -1 && (y2 < x2 || x2 == -1) { x2 = y2; }
 
                     if x2 > 0 {
                         lib_name = bytesops::substring(&lib_name, 0, x2);
 
                         lib_name = bytesops::trim(lib_name.to_string());
+                        lib_name = bytesops::ascii(lib_name.to_string());
                         if result.contains(&lib_name) == false {
                             result.push(lib_name.to_string());
                         }
@@ -53,14 +54,13 @@ fn crates_list(buf: &Vec<u8>, start: String, end: String) -> Vec<String> {
     result.sort();
     let mut result2 = vec![];
     for r in result {
-        println!("- {}", r.to_string());
         result2.push(r.to_string());
     }
     
     return result2;
 }
 
-fn modules_list(buf: &Vec<u8>, start: String, end: String, mode: i32) -> Vec<String> {
+fn modules_list(buf: &Vec<u8>, start: String, end: String, append: String, mode: i32) -> Vec<String> {
     let mut prog_names: Vec<String> = std::env::args().collect();
     prog_names.remove(0);
 
@@ -82,14 +82,26 @@ fn modules_list(buf: &Vec<u8>, start: String, end: String, mode: i32) -> Vec<Str
             let z = bytesops::index_of(&lib_name.as_bytes().to_vec(), &",".as_bytes().to_vec(), 0, false);
             let w = bytesops::index_of(&lib_name.as_bytes().to_vec(), &"+".as_bytes().to_vec(), 0, false);
             let v = bytesops::index_of(&lib_name.as_bytes().to_vec(), &"#".as_bytes().to_vec(), 0, false);
-            if y != -1 && y < x { x = y; }
-            if z != -1 && z < x { x = z; }
-            if w != -1 && w < x { x = w; }
-            if v != -1 && v < x { x = v; }
-
+            let u = bytesops::index_of(&lib_name.as_bytes().to_vec(), &"-".as_bytes().to_vec(), 0, false);
+            let t = bytesops::index_of_non_fn(&lib_name.as_bytes().to_vec(), 0);
+            let s = bytesops::index_of(&lib_name.as_bytes().to_vec(), &"@".as_bytes().to_vec(), 0, false);
+            if y != -1 && (y < x || x == -1) { x = y; }
+            if z != -1 && (z < x || x == -1) { x = z; }
+            if w != -1 && (w < x || x == -1) { x = w; }
+            if v != -1 && (v < x || x == -1) { x = v; }
+            if u != -1 && (u < x || x == -1) { x = u; }
+            if t != -1 && (t < x || x == -1) { x = t; }
+            if s != -1 && (s < x || x == -1) { x = s; }
+            
             if x != -1 {
                 lib_name = bytesops::substring(&lib_name, 0, x);
             }
+            
+            let mut x = bytesops::index_of_non_fn(&lib_name.as_bytes().to_vec(), 0);
+            if x != -1 {
+                lib_name = bytesops::substring(&lib_name, 0, x);
+            }
+
             if mode == 2 {
                 let mut x = bytesops::index_of(&lib_name.as_bytes().to_vec(), &&"/".as_bytes().to_vec(), 0, false);
                 if x != -1 {
@@ -100,7 +112,9 @@ fn modules_list(buf: &Vec<u8>, start: String, end: String, mode: i32) -> Vec<Str
                 }
             }
             lib_name = bytesops::trim(lib_name.to_string());
+            lib_name = bytesops::ascii(lib_name.to_string());
 
+            if lib_name.to_string() == "go" { continue; }
             if result.contains(&lib_name) == false {
                 result.push(lib_name.to_string());
             }
@@ -110,14 +124,15 @@ fn modules_list(buf: &Vec<u8>, start: String, end: String, mode: i32) -> Vec<Str
     result.sort();
     let mut result2 = vec![];
     for r in result {
-        result2.push(r.to_string());
+        let r2 = format!("{}{}", append.to_string(), r.to_string());
+        result2.push(r2.to_string());
     }
     
     return result2;
 }
 
 fn print_help() {
-    println!("{}", "rexetool 0.2.0");
+    println!("{}", "rexetool 0.3.0");
     println!("");
     println!("{}", "USAGE");
     println!("{}", " <Binary File path>               to check compiled Rust/Go binary and the crates/modules it used");
@@ -180,6 +195,7 @@ pub fn rexetool() {
     let f = File::open(s[0].to_string());
     match f {
         Ok(mut file) => {
+            let mut vec1 = vec![];
             let mut buf = vec![];
             let x = file.read_to_end(&mut buf);
             match x {
@@ -193,7 +209,7 @@ pub fn rexetool() {
                         println!("Program '{}' : Rust binary", bytesops::get_filename(s[0].to_string()));
 
                         println!("Crates used :");
-                        _ = crates_list(&buf, "crates.io-".to_string(), ".rs".to_string());    
+                        vec1 = crates_list(&buf, "crates.io-".to_string(), ".rs".to_string());    
                     } else if btype == BinaryType::CPP {
                         println!("Program '{}' : C++ binary", bytesops::get_filename(s[0].to_string()));
                     } else if btype == BinaryType::NET {
@@ -202,17 +218,19 @@ pub fn rexetool() {
                         println!("Program '{}' : Go binary", bytesops::get_filename(s[0].to_string()));
 
                         println!("Modules used :");
-                        let mut vec1 = modules_list(&buf, "golang_org/x/".to_string(), ".".to_string(), 1);
-                        let mut vec2 = modules_list(&buf, "github.com/".to_string(), ".".to_string(), 2);
+                        vec1 = modules_list(&buf, "golang_org/x/".to_string(), ".".to_string(), String::from(""), 1);
+                        let mut vec2 = modules_list(&buf, "golang.org/x/".to_string(), ".".to_string(), String::from(""), 1);
+                        let mut vec3 = modules_list(&buf, "github.com/".to_string(), ".".to_string(), "github.com/".to_string(), 2);
                         vec1.append(&mut vec2);
-                        
-                        for x in vec1 {
-                            println!("- {}", x);
-                        }
+                        vec1.append(&mut vec3);
                     } else if btype == BinaryType::Unknown {
                         println!("Program '{}' : Unknown binary", bytesops::get_filename(s[0].to_string()));
                     }
-                                    },
+
+                    for x in vec1 {
+                        println!("- {}", x);
+                    }
+                },
                 Err(x) => {
                     println!("{}", x);
                     return;
