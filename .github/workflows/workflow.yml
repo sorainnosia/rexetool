@@ -17,14 +17,14 @@ jobs:
           override: true
 
       - name: Build
-        run: cargo clean && cargo build --release && strip target/release/rexetool && mv target/release/rexetool target/release/rexetool_linux_x64
+        run: rustup toolchain install nightly && rustup component add rust-src --toolchain nightly && cargo clean && cargo +nightly build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --target x86_64-unknown-linux-gnu --release && strip target/x86_64-unknown-linux-gnu/release/rexetool && mv target/x86_64-unknown-linux-gnu/release/rexetool target/x86_64-unknown-linux-gnu/release/rexetool_linux_x64
 
       - name: Upload linux-amd64
         uses: actions/upload-artifact@v2
         with: 
           name: rexetool_linux_x64
-          path: target/release/rexetool_linux_x64
-
+          path: target/x86_64-unknown-linux-gnu/release/rexetool_linux_x64
+          
   build-win-x64:
     runs-on: windows-latest
 
@@ -41,19 +41,23 @@ jobs:
 
       - name: Build
         run: |
+          rustup toolchain install nightly
+          rustup component add rust-src --toolchain nightly
           cargo clean
-          cargo build --release
+          cargo +nightly build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --target x86_64-pc-windows-msvc --release
       - name: Upload win-x64
         uses: actions/upload-artifact@v2
         with: 
           name: rexetool_win_x64.exe
-          path: target/release/rexetool.exe
+          path: target/x86_64-pc-windows-msvc/release/rexetool.exe
 
       - name: Build
         run: |
+          rustup toolchain install nightly
+          rustup component add rust-src --toolchain nightly
           cargo clean
           rustup target install i686-pc-windows-msvc
-          cargo build --release --target=i686-pc-windows-msvc
+          cargo +nightly build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --target i686-pc-windows-msvc --release
           
       - name: Upload win-x64
         uses: actions/upload-artifact@v2
@@ -77,10 +81,10 @@ jobs:
           override: true
 
       - name: Build for mac
-        run: cargo clean && cargo build --release && strip target/release/rexetool && mv target/release/rexetool target/release/rexetool_mac_x64
+        run: rustup toolchain install nightly && rustup component add rust-src --toolchain nightly && cargo clean && cargo +nightly build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --target x86_64-apple-darwin --release && strip target/x86_64-apple-darwin/release/rexetool && mv target/x86_64-apple-darwin/release/rexetool target/x86_64-apple-darwin/release/rexetool_mac_x64
 
       - name: Upload mac-x64
         uses: actions/upload-artifact@v2
         with: 
           name: rexetool_mac_x64.exe
-          path: target/release/rexetool_mac_x64
+          path: target/x86_64-apple-darwin/release/rexetool_mac_x64
